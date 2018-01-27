@@ -1,0 +1,20 @@
+# example file defining network structure
+
+# list of all node indices and positions
+NODE 6 2 13.746
+NODE 1 0 0 
+NODE 2 4 0
+NODE 3 0 4
+NODE 4 4 4
+NODE 5 2 11.746
+
+# node connectivities (list edge indices and node indices for each edge)
+# must list these *after* all the nodes
+EDGE 1 2 1
+EDGE 3 4 2
+EDGE 2 3 1
+EDGE 4 3 4
+EDGE 7 6 5
+EDGE 5 3 5
+EDGE 6 4 5
+

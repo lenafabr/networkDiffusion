@@ -1,25 +1,38 @@
 \documentclass[12pt]{article}
 \usepackage{url,setspace,amsmath}
-\usepackage{graphicx}
+\usepackage{graphicx,xcolor}
 \usepackage[letterpaper, left=1in, right=1in, top=0.9in, bottom=1in, nofoot,nohead, footskip=0pt]{geometry}
 \setstretch{1}
 
 \begin{document}
-\title{\vspace{-2cm}Documentation for This Code}
+\title{\vspace{-2cm}Documentation for networkDiffusion Code}
 \author{E.~F.~Koslover}
 \date{Last updated \today}
 \maketitle
 
-The code in this package will run a simple Brownian dynamics simulation of a semiflexible chain. 
+The code in this package will simulate diffusion on a network of 1D paths.
 
 %\tableofcontents
 
 \section*{Notes for myself describing code implementation}
 
 \begin{itemize}
-	\item Assume all diffusion is on purely 1D paths, so just need to keep track of where in the network the particle goes
+	\item Assume all diffusion is on purely 1D paths, so just need to keep track of where in the network the particle goes	
 \end{itemize}
 
+\begin{minipage}{0.5\textwidth}
+Example network to use in code development:
+
+{\color{blue} blue} = node numbers \\
+black = edge numbers \\
+{\color{red} red} = edge lengths
+
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+	\end{minipage}
+\begin{minipage}{0.3\textwidth}
+\centerline{\includegraphics[width=0.5\textwidth]{example1network.pdf}}
+\end{minipage}
 \newpage
 
 \section{Compilation Instructions}

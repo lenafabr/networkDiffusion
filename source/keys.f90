@@ -10,8 +10,17 @@ MODULE KEYS
   ! ----------------------
   ! Output / input
   ! -----------------------
-  CHARACTER*100 :: OUTFILE, SNAPSHOTFILE
+  CHARACTER*100 :: OUTFILE, SNAPSHOTFILE, NETFILE
   LOGICAL :: DUMPSNAPSHOTS, RESTART, APPENDSNAPSHOTS
-  INTEGER :: SNAPSHOTEVERY  
+  INTEGER :: SNAPSHOTEVERY
+
+  ! ------------
+  ! network geometry and setup
+  ! ------------  
+  INTEGER :: MAXBRANCH ! max number of branches (per node) that can be input in the network
+
+  ! solving diffusion equations
+  DOUBLE PRECISION :: SOLVETOL ! solution tolerance (in function)
+  INTEGER :: SOLVEITER ! number of iterations allowed in function solution
   
 END MODULE KEYS

@@ -43,7 +43,15 @@ SUBROUTINE READKEY
   SNAPSHOTEVERY = 1 ! how often to dump snapshots
   SNAPSHOTFILE = '*.snap.out' ! snapshot file
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
+  NETFILE = '*.net' ! File containing network structure
 
+  ! network parameters
+  MAXBRANCH = 5 ! max number of branches per node
+
+  ! solving diffusion equations
+  SOLVETOL = 1D-4 ! solution tolerance
+  SOLVEITER = 100 ! max iterations
+  
   ! -------------------------
   ! Read in all parameter files, starting with the ones specified on command line
   ! --------------------------
@@ -97,6 +105,10 @@ SUBROUTINE READKEY
         SELECT CASE(WORD) ! pick which keyword
         CASE('ACTION')
            CALL READA(ACTION, CASESET=1)
+        CASE('MAXBRANCH')
+           CALL READI(MAXBRANCH)
+        CASE('NETFILE')
+           CALL READA(NETFILE)
         CASE('OUTFILE')
            CALL READA(OUTFILE)
         CASE('RNGSEED')
@@ -107,7 +119,7 @@ SUBROUTINE READKEY
            DUMPSNAPSHOTS = .TRUE.
            IF (NITEMS.GT.1) CALL READI(SNAPSHOTEVERY)
            IF (NITEMS.GT.2) CALL READA(SNAPSHOTFILE)
-           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
+           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)        
         CASE('VERBOSE')
            CALL READO(VERBOSE)
         CASE DEFAULT
@@ -127,6 +139,7 @@ SUBROUTINE READKEY
   ! ----------- fix file names -----------
   CALL REPLACESUBSTR(OUTFILE,'*',TRIM(ADJUSTL(ARG)))
   CALL REPLACESUBSTR(SNAPSHOTFILE,'*',TRIM(ADJUSTL(ARG)))
+  CALL REPLACESUBSTR(NETFILE,'*',TRIM(ADJUSTL(ARG)))
   ! ---------------------------
 
   ! Initiate random number generator 
@@ -152,7 +165,8 @@ SUBROUTINE READKEY
 
   print*, '------------Parameter values : -------------------'
   print*, 'ACTION: ', TRIM(ADJUSTL(ACTION))
-  print*, 'Output file: ', TRIM(OUTFILE)  
+  print*, 'Output file: ', TRIM(OUTFILE)
+  print*, 'Network file: ', TRIM(NETFILE)
   IF (DUMPSNAPSHOTS) THEN
      PRINT*, 'Dumping snapshot every', SNAPSHOTEVERY,'steps. In file:', TRIM(ADJUSTL(SNAPSHOTFILE))
   ENDIF    

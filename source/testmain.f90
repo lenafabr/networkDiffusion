@@ -1,8 +1,63 @@
 PROGRAM MAIN
   ! test various subroutines
+  USE KEYS
+  USE NETWORKUTIL
+  USE GENUTIL
   IMPLICIT NONE
+  TYPE(NETWORK), TARGET :: NET
+  TYPE(NETWORK), POINTER :: NETP
 
-  !CONTAINS
-  print*, 'Hello world!'
+  NETP=>NET
+
+  CALL READKEY
+
+  CALL TESTFZERO
+  !CALL TESTNETWORKFROMFILE
   
+CONTAINS
+
+  SUBROUTINE TESTFZERO
+    ! test function solver
+    USE DIFFUTIL
+    IMPLICIT NONE
+    DOUBLE PRECISION :: XSOLVE
+    
+    XSOLVE = Fsolve_INCR(TESTFUNC,801D0,(/2D0,1D0/),0d0)
+    
+  END SUBROUTINE TESTFZERO
+  
+  SUBROUTINE TESTNETWORKFROMFILE
+    ! test ability to read in network from file
+    IMPLICIT NONE
+    INTEGER :: EI, NI
+    
+    CALL NETWORKFROMFILE(NETP,NETFILE)
+
+    PRINT*, 'Edge connectivities and lengths:'
+    DO EI = 1,NETP%NEDGE
+       PRINT*, EI, NETP%EDGENODE(EI,:), NETP%EDGELEN(EI)
+    END DO
+
+    PRINT*, 'Edges connected to each node:'
+    DO NI = 1,NETP%NNODE
+       PRINT*, NI, NETP%NODEEDGE(NI,1:NETP%NODEDEG(NI))
+    ENDDO
+    
+    PRINT*, 'Nodes connected to each node:'
+    DO NI = 1,NETP%NNODE
+       PRINT*, NI, NETP%NODENODE(NI,1:NETP%NODEDEG(NI))
+    ENDDO
+    
+  END SUBROUTINE TESTNETWORKFROMFILE
+
+  DOUBLE PRECISION FUNCTION TESTFUNC(X,PARAMS,NP)
+    ! test function for testing numerical solvers
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: NP
+    DOUBLE PRECISION, INTENT(IN) :: X, PARAMS(NP)
+    
+    TESTFUNC = PARAMS(1)*X**2 + PARAMS(2)
+
+    PRINT*, 'TESTX1:', X, TESTFUNC
+  END FUNCTION TESTFUNC
 END PROGRAM MAIN
