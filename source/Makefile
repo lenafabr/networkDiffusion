@@ -1,4 +1,4 @@
-OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o networkutil.o diffutil.o
+OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o networkutil.o diffutil.o testmod.o
 
 FC = gfortran
 FLAGS = -O3 
