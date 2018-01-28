@@ -4,64 +4,116 @@ MODULE DIFFUTIL
   IMPLICIT NONE
 CONTAINS
 
-  ! DOUBLE PRECISION FUNCTION CUMFPT2ABS(T,PARAM,NP)
-  !   ! calculate the cumulative first passage time probability
-  !   ! up to time t
-  !   ! for a particle diffusing between two absorbing boundaries (in 1D)
-  !   ! length units nondimensionalized by L, time units by L^2/D
-  !   ! Parameters:
-  !   ! PARAM(1)= x0 (initial position)
-  !   ! PARAM(2) = flag (0,1, or -1)
-  !   ! flag of 0 = first passage time to any exit
-  !   ! flag of -1 = first passage time given left at left boundary
-  !   ! flag of 1 = first passage time given left at right boundary
+  SUBROUTINE SAMPLEFPT2ABS(X0,L,D,FPT,WHICHLEAVE)
+    ! sample the first passage time for a particle starting at position X0
+    ! between two absorbing boundaries (at 0 and L)
+    ! particle diffusivity D
+    ! WHICHLEAVE = 0 if leaving on the left, 1 if leaving on the right
+    USE GENUTIL, ONLY : PI
+    USE mt19937, ONLY : GRND
+    IMPLICIT NONE
+    DOUBLE PRECISION, INTENT(IN) :: X0, L, D
+    DOUBLE PRECISION, INTENT(OUT) :: FPT
+    INTEGER, INTENT(OUT) :: WHICHLEAVE
+
+    ! hard-coded maximum indices to avoid unrealistically large loops
+    INTEGER, PARAMETER :: MAXN = 500, MAXK = 100
+    ! list of N values for sine series
+    INTEGER :: NLIST(MAXN), NSET
+    ! coefficients for sine series
+    DOUBLE PRECISION :: COEFF(MAXN)
+    ! precalculate a coefficient for figuring out how
+    ! many N indices are needed for sin series convergence
+    DOUBLE PRECISION :: COEFFCHECKN
+
+    ! nondimensionalized initial position
+    DOUBLE PRECISION :: X0L
+
+    ! for testing purposes only
+    INTEGER :: TC
+    DOUBLE PRECISION :: T, H, TMP
     
-  !   IMPLICIT NONE
-  !   DOUBLE PRECISION, INTENT(IN) :: T
-  !   INTEGER, INTENT(IN) :: PARAM
-  !   DOUBLE PRECISION, INTENT(IN) :: PARAM(NP)
-  !   INTEGER, PARAMETER :: MAXN = 500, MAXK = 100
-  !   LOGICAL :: USESINE = 1
+    ! non-dimensionalize length units by L, time units by L^2/D
+    X0L = X0/L
 
-  !   ! decide whether to use method of images or sine series      
-  !   SQT = SQRT(T)
-  !   ! n index necessary for convergence
-  !   CHECKN = SQRT(-LOG(EPSILON(1D0))/T)/PI
-  !   NLIM = INT(CHECKN)
+    ! decide in what direction to leave   
+    TMP = GRND()      
+    IF (TMP < X0L) THEN
+       WHICHLEAVE = 1
+    ELSE
+       WHICHLEAVE = 0
+    ENDIF
     
-  !   IF (USESINE) THEN
-  !      ! use sine series summation (converges well for large t)
+    ! nset = for sine series, how many coefficients have already been calculated
+    NSET = 1
 
-  !      IF (NLIM.GT.MAXN) THEN
-  !         PRINT*, 'ERROR IN CUMFPT2ABS: NLIM out of bounds', NLIM, MAXN, T
-  !         stop 1
-  !      ELSE                 
-  !         NLIST(1:NLIM) = (/(N, N = 1,NLIM)/) 
-  !         IF (ROUND(PARAM(2)).EQ.1) THEN ! absorb to right boundary
-  !            COEFF(1:NLIM) = (-1)**NLIST(1:NLIM)*SIN(NLIST(1:NLIM)*PI*X0)&
-  !                 & /NLIST(1:NLIM)/X0*2/PI
-  !         ELSEIF (ROUND(PARAM(2).EQ.-1) THEN ! absorb to left boundary 
-  !            COEFF(1:NLIM) = (-1)**NLIST(1:NLIM)*&
-  !                 & SIN(NLIST(1:NLIM)*PI*(1-X0))/NLIST(1:NLIM)/(1-X0)*2/PI    
-  !         ELSE ! Overall absorbance
-  !            print*, 'ERROR IN CUMFPT2ABS: overall absorbance (param(2)=0) not yet implemented'
-  !            STOP 1
-  !         ENDIF
-  !      ENDIF
+    ! precalculated coefficient for establishing how many
+    ! n indices are necessary for convergence
+    COEFFCHECKN =  SQRT(-LOG(EPSILON(1D0))/PI**2*10)
 
-  !      ! probability particle has hit before this time
-  !      CUMFPT2ABS = 1 + SUM(COEFF(1:NLIM)*EXP(-(PI**2*T*GAMMA/L**2)*NLIST(1:NLIM)**2))         
-  !   END IF
-
-  !   IF (CUMFPT2ABS.LT.0.OR.CUMFPT2ABS.GT.1) THEN
-  !      PRINT*, 'ERROR IN CUMFPT2ABS: out of bounds', CUMFPT2ABS, USESINE,NLIM,T,PARAM(2)
-  !      PRINT*, L0,L,LP,T*GAMMA,COEFF(1)
-  !      stop 1
-  !   ENDIF
+    OPEN(UNIT=88,FILE='test.out')
+    DO TC = 1,100
+       T = 10**(-2+4*DBLE(TC)/100)
+       H = CUMFPT2ABS(T)
+       WRITE(88,*) TC, T, H
+       PRINT*, TC, T, H
+    ENDDO
+    CLOSE(88)
     
-  ! END FUNCTION CUMFPT2ABS
+  CONTAINS
+    DOUBLE PRECISION FUNCTION CUMFPT2ABS(T)
+      ! calculate the cumulative first passage time probability
+      ! up to time t
+      ! for a particle diffusing between two absorbing boundaries (in 1D)
+      ! length units nondimensionalized by L, time units by L^2/D
+      
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: T
+      INTEGER :: NLIM, N
+      DOUBLE PRECISION :: SQT
+      LOGICAL :: USESINE = .TRUE.
+      
+      
+      ! decide whether to use method of images or sine series      
+      SQT = SQRT(T)     
+      ! n index necessary for convergence
+      NLIM = INT(COEFFCHECKN/SQT)     
+     
+      IF (USESINE) THEN
+         ! use sine series summation (converges well for large t)
+
+         IF (NLIM.GT.MAXN) THEN
+            PRINT*, 'ERROR IN CUMFPT2ABS: NLIM out of bounds', NLIM, MAXN, T
+            stop 1
+         ELSEIF (NLIM.GE.NSET) THEN
+            ! update those coefficients that haven't
+            ! yet been calculated during this sampling run
+            NLIST(NSET:NLIM) = (/(N, N = NSET,NLIM)/) 
+            IF (WHICHLEAVE.EQ.1) THEN ! absorb to right boundary
+               COEFF(NSET:NLIM) = (-1)**NLIST(NSET:NLIM)&
+                    & *SIN(NLIST(NSET:NLIM)*PI*X0L)/NLIST(NSET:NLIM)/X0L*2/PI
+            ELSE ! absorb to left boundary 
+               COEFF(NSET:NLIM) = (-1)**NLIST(NSET:NLIM)*&
+                    & SIN(NLIST(NSET:NLIM)*PI*(1-X0L))/NLIST(NSET:NLIM)/(1-X0L)*2/PI
+            ENDIF           
+            NSET=NLIM
+         ENDIF
+         
+         ! probability particle has hit before this time
+         CUMFPT2ABS = 1 + SUM(COEFF(1:NLIM)*EXP(-(PI**2*T)*NLIST(1:NLIM)**2))  
+      END IF
+
+      IF (CUMFPT2ABS.LT.2*EPSILON(1D0).OR.CUMFPT2ABS.GT.1+2*EPSILON(1D0)) THEN
+         PRINT*, 'ERROR IN CUMFPT2ABS: out of bounds', CUMFPT2ABS, USESINE,NLIM,T,X0L
+         stop 1
+      ENDIF
+
+    END FUNCTION CUMFPT2ABS
+  END SUBROUTINE SAMPLEFPT2ABS
   
-  DOUBLE PRECISION FUNCTION FSOLVE_INCR(F,FVAL,PARAM,XL0,XU0)
+ 
+  
+  DOUBLE PRECISION FUNCTION FSOLVE_INCR(F,FVAL,XL0,XU0)
     !Search for roots of F(X) = FVAL
     ! Assuming F is a monotonically increasing function
     ! optionally, supply one or both end-points (XL,XU) for search interval
@@ -70,21 +122,17 @@ CONTAINS
     
     IMPLICIT NONE
     DOUBLE PRECISION :: XL,XU,FL,FU,FM, XM
-    DOUBLE PRECISION, INTENT(IN) :: FVAL,PARAM(:)
+    DOUBLE PRECISION, INTENT(IN) :: FVAL
     DOUBLE PRECISION, INTENT(IN), OPTIONAL :: XL0, XU0
     DOUBLE PRECISION :: TOL
-    INTEGER :: MAXCT, NC, NP
+    INTEGER :: MAXCT, NC
     
     INTERFACE
-       DOUBLE PRECISION FUNCTION F(X,P,NP)
-         INTEGER, INTENT(IN) :: NP
+       DOUBLE PRECISION FUNCTION F(X)
          DOUBLE PRECISION, INTENT(IN) :: X
-         DOUBLE PRECISION, INTENT(IN) :: P(NP)
        END FUNCTION F
     END INTERFACE
 
-    NP = SIZE(PARAM)
-    
     ! solve to the specified tolerance (along x axis)
     TOL = SOLVETOL
     ! maximum iterations allowed
@@ -93,7 +141,7 @@ CONTAINS
     ! set an initial lower bound where function is negative
     IF (PRESENT(XL0)) THEN
        XL = XL0
-       FL = F(XL,PARAM,NP)-FVAL
+       FL = F(XL)-FVAL
        IF (FL.EQ.0) THEN
           FSOLVE_INCR = XL
           RETURN
@@ -104,7 +152,7 @@ CONTAINS
     ELSE
        XL = 0D0 ! guess a lower bound
        NC = 0
-       FL = F(XL,PARAM,NP)-FVAL
+       FL = F(XL)-FVAL
        DO WHILE (FL.GT.0)
           XL = -(10D0)**NC
           NC = NC+1
@@ -118,7 +166,7 @@ CONTAINS
     ! set an initial upper bound where function is positive
     IF (PRESENT(XU0)) THEN
        XU = XU0
-       FU = F(XU,PARAM,NP)-FVAL
+       FU = F(XU)-FVAL
        IF (FU.EQ.0) THEN
           FSOLVE_INCR = XL
           RETURN
@@ -129,10 +177,10 @@ CONTAINS
     ELSE
        XU = XL ! guess an upper bound
        NC = 0
-       FU = F(XU,PARAM,NP)-FVAL
+       FU = F(XU)-FVAL
        DO WHILE (FU.LT.0)
           XU = XL + (10D0)**NC
-          FU = F(XU,PARAM,NP)-FVAL
+          FU = F(XU)-FVAL
           NC = NC+1
           IF (NC.GT.MAXCT) THEN
               PRINT*, 'ERROR IN FZERO: failed to find upper bound', NC, MAXCT
@@ -144,7 +192,7 @@ CONTAINS
     
     
     XM = XL + (XU-XL)*(-FL)/(FU-FL)    
-    FM = F(XM,PARAM,NP)-FVAL
+    FM = F(XM)-FVAL
     
     NC = 0 ! number of bisection cycles
     
@@ -158,14 +206,14 @@ CONTAINS
        
        IF (FM.GT.0) THEN
           XU = XM
-          FU = F(XU,PARAM,NP)-FVAL
+          FU = F(XU)-FVAL
        ELSE
           XL = XM
-          FL = F(XL,PARAM,NP)-FVAL
+          FL = F(XL)-FVAL
        ENDIF
 
        XM = XL + (XU-XL)*(-FL)/(FU-FL)   
-       FM = F(XM,PARAM,NP)-FVAL              
+       FM = F(XM)-FVAL              
     END DO
     FSOLVE_INCR = XM
   END FUNCTION FSOLVE_INCR
