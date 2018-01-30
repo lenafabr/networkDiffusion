@@ -43,14 +43,20 @@ SUBROUTINE READKEY
   SNAPSHOTEVERY = 1 ! how often to dump snapshots
   SNAPSHOTFILE = '*.snap.out' ! snapshot file
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
+  PRINTEVERY = 1000
   NETFILE = '*.net' ! File containing network structure
 
   ! network parameters
   MAXBRANCH = 5 ! max number of branches per node
 
-  ! solving diffusion equations
-  SOLVETOL = 1D-4 ! solution tolerance
-  SOLVEITER = 100 ! max iterations
+  ! solving diffusion equations and propagating particles
+  SOLVETOLF = 1D-4 ! solution tolerance (for function)
+  SOLVETOLX = 1D-4 ! solution tolerance (for x value)
+  
+  SOLVEITER = 1000 ! max iterations
+  NPART = 1000 ! number of particles to propagate
+  NSTEP = 1E6 ! Number of steps to propagate for
+  DELT = 1D-4 ! time step for BD propagation
   
   ! -------------------------
   ! Read in all parameter files, starting with the ones specified on command line
@@ -105,12 +111,20 @@ SUBROUTINE READKEY
         SELECT CASE(WORD) ! pick which keyword
         CASE('ACTION')
            CALL READA(ACTION, CASESET=1)
+        CASE('DELT')
+           CALL READF(DELT)
         CASE('MAXBRANCH')
            CALL READI(MAXBRANCH)
         CASE('NETFILE')
            CALL READA(NETFILE)
+        CASE('NPART')
+           CALL READI(NPART)
+        CASE('NSTEP')
+           CALL READI(NSTEP)
         CASE('OUTFILE')
            CALL READA(OUTFILE)
+        CASE('PRINTEVERY')
+           CALL READI(PRINTEVERY)
         CASE('RNGSEED')
            CALL READI(RNGSEED)
         CASE('SNAPSHOTFILE')
@@ -119,7 +133,10 @@ SUBROUTINE READKEY
            DUMPSNAPSHOTS = .TRUE.
            IF (NITEMS.GT.1) CALL READI(SNAPSHOTEVERY)
            IF (NITEMS.GT.2) CALL READA(SNAPSHOTFILE)
-           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)        
+           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
+        CASE('SOLVETOL')
+           CALL READF(SOLVETOLX)
+           CALL READF(SOLVETOLF)
         CASE('VERBOSE')
            CALL READO(VERBOSE)
         CASE DEFAULT

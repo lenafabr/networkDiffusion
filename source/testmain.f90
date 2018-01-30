@@ -16,21 +16,56 @@ PROGRAM MAIN
   !CALL TESTFZERO
   !CALL TESTNETWORKFROMFILE
   CALL TESTSAMPLEFPT
-  
+  !CALL TESTBROWNDYN
   
 CONTAINS
   SUBROUTINE TESTSAMPLEFPT
     ! test routine for sampling first passage time from a 2-abs domain
     IMPLICIT NONE
-    DOUBLE PRECISION :: FPT
-    INTEGER :: WHICHLEAVE
-    INTEGER :: T
+    DOUBLE PRECISION :: FPT(NPART)
+    INTEGER :: WHICHLEAVE(NPART)   
+    INTEGER :: T, PC
+    DOUBLE PRECISION :: X0
+
+    X0 = 0.5D0
+
     
     ! DO T = 0,100
     !    PRINT*, 1.1**T, EXP(-1.1D0**T)
     ! ENDDO
-   CALL SAMPLEFPT2ABS(0.5D0,1D0,1D0,FPT,WHICHLEAVE)
+
+    ! Original testing run to plot analytical function
+    !CALL SAMPLEFPT2ABS(0.1D0,1D0,1D0,FPT(1),WHICHLEAVE(1))
+    !RETURN
+    
+    ! Run sampler
+    OPEN(UNIT=99,FILE='test.out')
+    DO PC = 1,NPART
+       CALL SAMPLEFPT2ABS(X0,1D0,1D0,FPT(PC),WHICHLEAVE(PC))
+       write(99,*) PC, WHICHLEAVE(PC), FPT(PC)
+    ENDDO
+    CLOSE(99)
   END SUBROUTINE TESTSAMPLEFPT
+
+  SUBROUTINE TESTBROWNDYN
+    ! test brownian dynamics sims in 1D with 2 absorbing boundaries    
+    IMPLICIT NONE
+    INTEGER :: WHICHLEAVE(NPART)
+    DOUBLE PRECISION :: LEAVETIME(NPART)
+    INTEGER :: PC
+    DOUBLE PRECISION :: X0
+    
+    ! run BD sims
+    X0 = 0.5 
+    CALL BROWNDYNFPT2ABS(X0,NPART,NSTEP,DELT,WHICHLEAVE,LEAVETIME)
+
+    ! output results
+    OPEN(UNIT=99,FILE='test.bd.out')
+    DO PC = 1,NPART
+       WRITE(99,*) PC, WHICHLEAVE(PC), LEAVETIME(PC)
+    ENDDO
+    CLOSE(99)
+  END SUBROUTINE TESTBROWNDYN
   
   SUBROUTINE TESTNETWORKFROMFILE
     ! test ability to read in network from file

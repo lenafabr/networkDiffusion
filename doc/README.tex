@@ -33,7 +33,24 @@ black = edge numbers \\
 \begin{minipage}{0.3\textwidth}
 \centerline{\includegraphics[width=0.5\textwidth]{example1network.pdf}}
 \end{minipage}
+
+\begin{itemize}
+	\item When sampling from cumulative distribution, require convergence to SOLVETOLF in function value and SOLVETOLX in x value
+\end{itemize}	
 \newpage
+
+%\section*{Testing Notes}
+%\begin{minipage}{0.6\textwidth}
+%Compare analytical cumulative distribution function for exit times from 2 absorbing boundary 1D interval (starting at $x_0=0.5$, using sine series expansion) versus numerical Brownian dynamics sims
+%
+%\bigskip
+%Uses TESTSAMPLEFPT and TESTBROWNDYN subroutines.
+%\end{minipage}
+%\begin{minipage}{0.2\textwidth}
+%\end{minipage}
+%\begin{minipage}{0.5\textwidth}
+%	\centerline{\includegraphics[width=\textwidth]{cumfpt1D_x0pt5.png}}
+%\end{minipage}
 
 \section{Compilation Instructions}
 To compile and run the program, you will need the following:
