@@ -28,5 +28,8 @@ MODULE KEYS
   INTEGER :: NPART ! number of particles to propagate
   INTEGER :: NSTEP ! number of steps to propagate for
   DOUBLE PRECISION :: DELT ! time-step for BD sims
-  
+
+  ! How close to a node does the particle have to come to be considered at the node
+  ! for propagation through tubules
+  DOUBLE PRECISION :: NODETOL 
 END MODULE KEYS

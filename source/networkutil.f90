@@ -19,11 +19,12 @@ MODULE NETWORKUTIL
      ! degree (number of branches) of each node
      INTEGER, POINTER :: NODEDEG(:)
      ! list of branch indices each node connects to
-     INTEGER, POINTER :: NODEEDGE(:,:)     
-     ! minimal branch length connected to each node
-     DOUBLE PRECISION, POINTER :: NODEMINLEN(:)
+     INTEGER, POINTER :: NODEEDGE(:,:)          
+     ! lengths of all edges leaving the node
+     DOUBLE PRECISION, POINTER :: NODELEN(:,:)
      ! spatial location of node
      DOUBLE PRECISION, POINTER :: NODEPOS(:,:)
+     
      
      ! ------------------
      ! information on network branches
@@ -55,8 +56,9 @@ CONTAINS
     LOGICAL :: LDUM, CASESET
     LOGICAL :: FILEEND=.FALSE., DIMSET = .FALSE.
     CHARACTER*100 :: WORD
-    INTEGER :: NITEMS, NNODE, NEDGE, NODE1, NODE2, DIM, EID, NID
-    DOUBLE PRECISION :: LEN
+    INTEGER :: NITEMS, NNODE, NEDGE, NODE1, NODE2, DIM, EID, NID, NE
+    DOUBLE PRECISION :: LEN, LENS(MAXBRANCH), LENSAVE(MAXBRANCH)
+    INTEGER :: TMPARRAY(MAXBRANCH)
     
     INTEGER, PARAMETER :: NF = 55 ! input file unit number
    
@@ -74,14 +76,16 @@ CONTAINS
 
      ! Count number of nodes and edges, set spatial dimension
      DIMSET = .FALSE.
+     NNODE = 0; NEDGE = 0
      DO 
         CALL READLINE(NF,FILEEND,NITEMS)
+        
         IF (FILEEND.and.nitems.eq.0) EXIT
         ! skip empty lines
         IF (NITEMS.EQ.0) CYCLE
         ! Read in the keyword for this line
         CALL READA(WORD,CASESET=1)
-        
+
         IF (WORD.EQ.'NODE') THEN
            NNODE = NNODE+1
            ! set spatial dimension of network
@@ -152,10 +156,7 @@ CONTAINS
         NETP%EDGESTART(EID,:) = NETP%NODEPOS(NODE1,:)
         NETP%EDGEDIR(EID,:) = NETP%NODEPOS(NODE2,:)-NETP%NODEPOS(NODE1,:)   
         CALL NORMALIZE(NETP%EDGEDIR(EID,:), LEN)          
-        NETP%EDGELEN(EID) = LEN
-        ! update minimal edge length for each node
-        IF (LEN.LT.NETP%NODEMINLEN(NODE1)) NETP%NODEMINLEN(NODE1) = LEN
-        IF (LEN.LT.NETP%NODEMINLEN(NODE2)) NETP%NODEMINLEN(NODE2) = LEN
+        NETP%EDGELEN(EID) = LEN       
 
         ! increment degrees of the nodes
         NETP%NODEDEG(NODE1) = NETP%NODEDEG(NODE1)+1
@@ -176,6 +177,22 @@ CONTAINS
         NETP%NODENODE(NODE2,NETP%NODEDEG(NODE2)) = NODE1              
      END DO
 
+     ! for each node, sort edges by length
+     DO NID = 1,NETP%NNODE
+        NE = NETP%NODEDEG(NID)
+        LENS(1:NE) = NETP%EDGELEN(NETP%NODEEDGE(NID,1:NE))
+        LENSAVE = LENS
+        TMPARRAY = NETP%NODEEDGE(NID,:)        
+        CALL SORT2INT(NE,LENS,TMPARRAY)
+        NETP%NODEEDGE(NID,1:NE) = TMPARRAY(1:NE)
+        
+        TMPARRAY = NETP%NODENODE(NID,:)
+        CALL SORT2INT(NE,LENSAVE,TMPARRAY)
+        NETP%NODENODE(NID,1:NE) = TMPARRAY(1:NE)
+
+        ! length of all edges leaving the node
+        NETP%NODELEN(NID,1:NE)= LENS(1:NE)
+     ENDDO
      
   END SUBROUTINE NETWORKFROMFILE
   
@@ -197,14 +214,14 @@ CONTAINS
 
     ! allocate node data
     ALLOCATE(NETP%NODENODE(NNODE,MAXBRANCH), NETP%NODEEDGE(NNODE,MAXBRANCH), &
-         & NETP%NODEMINLEN(NNODE), NETP%NODEPOS(NNODE,DIM), NETP%NODEDEG(NNODE))
+         &  NETP%NODEPOS(NNODE,DIM), NETP%NODEDEG(NNODE),NETP%NODELEN(NNODE,MAXBRANCH))
 
     ! allocate branch data
     ALLOCATE(NETP%EDGENODE(NEDGE,2), NETP%EDGESTART(NEDGE,DIM),&
          & NETP%EDGEDIR(NEDGE,DIM), NETP%EDGELEN(NEDGE))
 
     NETP%ARRAYSET = .TRUE.
-    NETP%NODEMINLEN = HUGE(1D0)
+    NETP%NODELEN = HUGE(1D0)
     NETP%NODEDEG = 0
     NETP%NODEEDGE = 0; NETP%EDGENODE = 0; NETP%NODENODE = 0
   END SUBROUTINE SETUPNETWORK
@@ -213,10 +230,12 @@ CONTAINS
     ! deallocate arrays for the network structure
     IMPLICIT NONE
     TYPE(NETWORK), POINTER :: NETP
-    
-    DEALLOCATE(NETP%NODENODE, NETP%NODEEDGE, NETP%NODEMINLEN, NETP%NODEPOS)
+
+    IF (NETP%ARRAYSET) THEN
+    DEALLOCATE(NETP%NODENODE, NETP%NODEEDGE, NETP%NODEPOS, NETP%NODELEN)
     DEALLOCATE(NETP%EDGENODE, NETP%EDGESTART, NETP%EDGEDIR, NETP%EDGELEN)
-    
+ ENDIF
+ 
     NETP%ARRAYSET = .FALSE.
   END SUBROUTINE CLEANUPNETWORK
 END MODULE NETWORKUTIL

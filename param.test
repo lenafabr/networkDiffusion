@@ -1,7 +1,7 @@
 # parameter file for testing basic network structure and diffusion code
 
-RNGSEED 0
+RNGSEED 10
 NETFILE example1.net
-NPART 1E4
+NPART 10
 DELT 1D-4
 SOLVETOL 1D-4 1D-2

@@ -57,6 +57,8 @@ SUBROUTINE READKEY
   NPART = 1000 ! number of particles to propagate
   NSTEP = 1E6 ! Number of steps to propagate for
   DELT = 1D-4 ! time step for BD propagation
+
+  NODETOL=1D-4 ! how close is considered at a node?
   
   ! -------------------------
   ! Read in all parameter files, starting with the ones specified on command line
@@ -117,6 +119,8 @@ SUBROUTINE READKEY
            CALL READI(MAXBRANCH)
         CASE('NETFILE')
            CALL READA(NETFILE)
+        CASE('NODETOL')
+           CALL READF(NODETOL)
         CASE('NPART')
            CALL READI(NPART)
         CASE('NSTEP')
