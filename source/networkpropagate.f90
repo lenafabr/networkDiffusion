@@ -3,7 +3,7 @@ MODULE NETWORKPROPAGATE
   IMPLICIT NONE
 
 CONTAINS
-  SUBROUTINE RUNPROPAGATE(NETP,NPART,STARTNODE,MAXSTEPS,EDGEFPT)
+  SUBROUTINE RUNPROPAGATE(NETP,NPART,STARTNODE,MAXSTEPS,DCOEFF,NODEFPT)
     ! Propagate many particles over the network, starting at a specific node
     ! propagation is asynchronous, so different particles
     ! are at different times at each step
@@ -15,66 +15,94 @@ CONTAINS
     ! NPART: number of particles to run
     ! STARTNODE: node on the network where they all start
     ! MAXSTEPS: maximum number of steps to run
+    ! DCOEFF: diffusion coefficient
     ! -------
     ! Outputs:
     ! -------
-    ! EDGEFPT(P,E): for edge E, the first time particle P visits it    
-    ! ----------
-    ! WARNING:
-    ! ---------
-    ! when a particle propagates directly from one node to another
-    ! then the FPT for that edge is marked as the arrival time
-    ! this is not entirely right. Should probably put checkpoints in the middle
-    ! of each edge, or else count FPTs to nodes
-    ! SHOULD PROBABLY REWRITE THIS FOR FPTS TO NODES
-
-    ! STOPPED HERE. THIS NEEDS VARIABLE DECLARATIONS, ETC
+    ! NODEFPT(P,N): for particle P, the first time it visits node N
+    USE NETWORKUTIL, ONLY : NETWORK
+    USE DIFFUTIL, ONLY : SAMPLEFPT2ABS
+    USE KEYS, ONLY : PRINTEVERY
     IMPLICIT NONE
     TYPE(NETWORK), POINTER :: NETP
     INTEGER, INTENT(IN) :: NPART, STARTNODE, MAXSTEPS
-    DOUBLE PRECISION, INTENT(OUT) :: EDGEFPT(NPART,NETP%NEDGE)
-    INTEGER :: PLOC
+    DOUBLE PRECISION, INTENT(IN) :: DCOEFF
+    DOUBLE PRECISION, INTENT(OUT) :: NODEFPT(NPART,NETP%NNODE)
+    ! index of node or edge where particle is located
+    INTEGER :: PLOC(NPART)
+    ! length along edge where particle is located
+    DOUBLE PRECISION :: EDGEPOS(NPART)
+    INTEGER :: STEP, PC
+    LOGICAL :: DONE(NPART), ONNODE(NPART)
+    DOUBLE PRECISION :: CURTIMES(NPART)
+    DOUBLE PRECISION :: DELT, LEAVELEN
+    INTEGER :: LEAVENODE, LEAVEEDGE, WHICHLEAVE
+    
 
     IF (.NOT.NETP%ARRAYSET) THEN
        PRINT*, 'ERROR IN STEPFROMNODE: network has not yet been set up!'
        STOP 1
-    ELSEIF(NID.GT.NETP%NNODE) THEN
-       PRINT*, 'ERROR IN STEPFROMNODE: network does not have enough nodes'
+    ELSEIF(STARTNODE.GT.NETP%NNODE.OR.STARTNODE.LE.0) THEN
+       PRINT*, 'ERROR IN RUNPROPAGATE: invalid startnode', STARTNODE
        STOP 1
     ENDIF
 
-    EDGEFPT = -1D0
-
+    ! none of the nodes visited yet    
+    NODEFPT = -1D0    
+    EDGEPOS = -1D0
+    
     ! start all particles on a single node
     ! ONNODE keeps track of which particles are on nodes vs edges
     ONNODE = .TRUE.
+    DONE = .FALSE.
     ! PLOC is the node or edge index for each particle    
     PLOC = STARTNODE
+    NODEFPT(:,STARTNODE) = 0D0
+    
+    CURTIMES = 0D0
     
     DO STEP = 1,MAXSTEPS
-       PRINT*, 'STEP, # that have hit last edge:', STEP, COUNT(EDGEFPT(:,NETP%NEDGE)>0)
+       IF (MOD(STEP,PRINTEVERY).EQ.0) THEN
+          PRINT*, 'STEP, # that have hit all nodes, max time:', STEP, COUNT(DONE), CURTIMES(1), PLOC(1), ONNODE(1)
+          !, MAXVAL(CURTIMES)
+       ENDIF
+
+       IF (ALL(DONE)) EXIT
+       
        DO PC = 1,NPART
           IF (DONE(PC)) CYCLE
           
           IF (ONNODE(PC)) THEN
              CALL STEPFROMNODE(NETP, PLOC(PC), DCOEFF,DELT, LEAVENODE, LEAVEEDGE, LEAVELEN)
              CURTIMES(PC) = CURTIMES(PC)+DELT
-             
-             IF (EDGEFPT(PC,LEAVEEDGE).LT.0) THEN
-                ! mark down first passage time to this edge by this particle
-                EDGEFPT(PC,LEAVEEDGE) = CURTIMES(PC)
+
+             IF (LEAVENODE.GT.0) THEN                
+                IF (NODEFPT(PC,LEAVENODE).LT.-0.5) THEN
+                   ! mark down first visit to this node by this particle
+                   NODEFPT(PC,LEAVENODE) = CURTIMES(PC)
+                ENDIF
+                PLOC(PC) = LEAVENODE
+             ELSE
+                ONNODE(pc) = .FALSE. ! particle is along an edge now
+                EDGEPOS(PC) = LEAVELEN
+                PLOC(PC) = LEAVEEDGE
              ENDIF
-          ELSE ! propagate from edge to nearest node
-             CALL SAMPLEFPT2ABS(L0,NETP%EDGELEN(PLOC(PC)),DCOEFF,DELT,WHICHLEAVE)
+          ELSE ! propagate from edge to a neighboring node
+             CALL SAMPLEFPT2ABS(EDGEPOS(PC),NETP%EDGELEN(PLOC(PC)),DCOEFF,DELT,WHICHLEAVE)
              CURTIMES(PC) = CURTIMES(PC)+DELT
              
              PLOC(PC)= NETP%EDGENODE(PLOC(PC),WHICHLEAVE+1)
              ONNODE(PC) = .TRUE.
+
+             IF (NODEFPT(PC,PLOC(PC)).LT.-0.5) THEN
+                ! Mark down first visit to this node by this particle
+                NODEFPT(PC,PLOC(PC)) = CURTIMES(PC)
+             ENDIF
           ENDIF
 
           ! Stop tracking the particle once it has hit every edge
-          IF (ALL(EDGEFPT(PC,:).GT.0)) THEN
-             DONE(P) = .TRUE.
+          IF (ALL(NODEFPT(PC,:).GT.-0.5)) THEN
+             DONE(PC) = .TRUE.
           END IF
                           
        ENDDO
