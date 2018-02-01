@@ -1,4 +1,4 @@
-OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o networkutil.o diffutil.o testmod.o
+OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o networkutil.o diffutil.o testmod.o sort2int.o networkpropagate.o
 
 FC = gfortran
 FLAGS = -O3 
@@ -15,7 +15,7 @@ TESTEXE = ../testrun.exe
 %.o: %.f90 
 	$(FC) $(FLAGS) $(DEBUGFLAGS) -c $<
 
-%.o: tools/%.f90
+%.o: tools/%.f*
 	$(FC) $(FLAGS) $(DEBUGFLAGS) -c $<
 
 default: $(OBJS) main.o
