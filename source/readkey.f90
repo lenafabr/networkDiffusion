@@ -57,7 +57,7 @@ SUBROUTINE READKEY
   NPART = 1000 ! number of particles to propagate
   NSTEP = 1E6 ! Number of steps to propagate for
   DELT = 1D-4 ! time step for BD propagation
-
+  DCOEFF = 1D0 ! diffusion coefficient, just sets time-units
   NODETOL=1D-4 ! how close is considered at a node?
   
   ! -------------------------
@@ -113,6 +113,8 @@ SUBROUTINE READKEY
         SELECT CASE(WORD) ! pick which keyword
         CASE('ACTION')
            CALL READA(ACTION, CASESET=1)
+        CASE('DCOEFF')
+           CALL READF(DCOEFF)
         CASE('DELT')
            CALL READF(DELT)
         CASE('MAXBRANCH')
@@ -141,6 +143,8 @@ SUBROUTINE READKEY
         CASE('SOLVETOL')
            CALL READF(SOLVETOLX)
            CALL READF(SOLVETOLF)
+        CASE('STARTNODE')
+           CALL READI(STARTNODE)
         CASE('VERBOSE')
            CALL READO(VERBOSE)
         CASE DEFAULT
@@ -188,6 +192,8 @@ SUBROUTINE READKEY
   print*, 'ACTION: ', TRIM(ADJUSTL(ACTION))
   print*, 'Output file: ', TRIM(OUTFILE)
   print*, 'Network file: ', TRIM(NETFILE)
+  print*, 'Number of particles:', NPART
+  PRINT*, 'Starting node:', STARTNODE
   IF (DUMPSNAPSHOTS) THEN
      PRINT*, 'Dumping snapshot every', SNAPSHOTEVERY,'steps. In file:', TRIM(ADJUSTL(SNAPSHOTFILE))
   ENDIF    

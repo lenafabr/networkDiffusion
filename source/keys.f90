@@ -19,7 +19,8 @@ MODULE KEYS
   ! network geometry and setup
   ! ------------  
   INTEGER :: MAXBRANCH ! max number of branches (per node) that can be input in the network
-
+  INTEGER :: STARTNODE ! starting node for propagating particles
+  
   ! -----------------
   ! solving diffusion equations and propagating particles
   ! ----------------
@@ -28,6 +29,7 @@ MODULE KEYS
   INTEGER :: NPART ! number of particles to propagate
   INTEGER :: NSTEP ! number of steps to propagate for
   DOUBLE PRECISION :: DELT ! time-step for BD sims
+  DOUBLE PRECISION :: DCOEFF ! sets time units
 
   ! How close to a node does the particle have to come to be considered at the node
   ! for propagation through tubules
