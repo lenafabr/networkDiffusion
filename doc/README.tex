@@ -79,7 +79,7 @@ If the compilation works properly, the executable \path=chainBD.exe= will appear
 \section{Usage Instructions}
 To run the program in the main directory, type:
 \begin{verbatim}
-./chainBD.exe suffix > outputfile.out
+./networkdiffusion.exe suffix > outputfile.out
 \end{verbatim}
 
 Here, \verb=suffix= can be any string up to 100 characters in length. 
@@ -101,13 +101,20 @@ change something from the default.
 
 \section{Example for a Quick Start}
 \subsection{Example 1}
-An example parameter file (\verb=param.example1=) is provided. This will run a Brownian dynamics simulation for a short, approximately Gaussian chain (low bending modulus). Run the example with 
+
+\begin{minipage}{0.8\textwidth}
+An example parameter file (\verb=param.example1=) is provided. This will run a simulation of $10^4$ particles propagating over a simple network, keeping track of the first passage time of each particle to each node. Run the example with 
 \begin{verbatim}
-./chainBD.exe example1
+./networkdiffusion.exe example1
 \end{verbatim}
 
-Use the script \verb=checkexample.m= to visualize the resulting MSD of a bead at the end of the chain. It should look something like this:
+Use the script \verb=plotnetworkfpt.m= to visualize the mean first passage time to each node on the network (where all particles start at node 1, shown in black).
 
+The movie \verb=example1_nodehit.avi= shows the fraction of particles that have hit each node over time. Also made with the \verb=plotnetworkfpt.m= script. 
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\centerline{\includegraphics[width=\textwidth]{example1fpt.eps}}
+\end{minipage}
 % ---------------------------------------------------------
 
 \section{Keyword Index}
@@ -125,13 +132,15 @@ Floating point numbers can be formated as $1.0$, $1.1D0$, $10e-1$, $-1.0E+01$, e
 
 The length units used for the defaults are in nm and the energy units are in kT. 
 
+WARNING: documentation of keyword arguments is not finished. Look inside keys.f90 and readkey.f90 for the possible keywords
+
 \begin{itemize}
 %
 \item {\it ACTION}
   \begin{itemize}
     \item  value: 1 string of at most 20 characters; no default
     \item This keyword sets the overall calculation performed by the program (see Sec.\ref{sec:tasks})
-    \item Possible values are: BROWNDYN
+    \item Possible values are: GETFPT
   \end{itemize}
 \item {\it OUTFILE}
     \begin{itemize}
@@ -150,14 +159,14 @@ The length units used for the defaults are in nm and the energy units are in kT.
     \item other positive value: the seed is used directly for repeatable simulations (should be positive)
   \end{itemize}
 %
-\item {\it SNAPSHOTS}
+\item {\it SNAPSHOTS} (not implemented yet)
   \begin{itemize}
     \item 1 optional integer, 1 optional string, 1 optional logical; defaults: 1, *.snap.out, false 
     \item Dump snapshots over the course of the calculation
     \item integer: how often to dump snapshots; string: snapshot file (* is replaced with suffix); logical: append rather than rewriting the snapshot file
    \end{itemize}
 %
-\item {\it SNAPSHOTFILE}
+\item {\it SNAPSHOTFILE} (not implemented yet)
     \begin{itemize}
       \item  value: 1 string; default: *.snap.out
       \item File for dumping out snapshots. Can also be specified within SNAPSHOTS keyword.   
