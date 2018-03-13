@@ -5,7 +5,8 @@ ACTION GETFPT
 RNGSEED 0
 
 # network structure stored in this file
-NETFILE example1.net
+NETFILE *.net
+OUTFILE *.out
 
 # number of particles to simulate
 NPART 10000

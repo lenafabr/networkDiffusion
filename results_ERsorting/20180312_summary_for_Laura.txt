@@ -1,0 +1,19 @@
+Hi Laura,
+
+We've had a chance to dig into the cell images and data you previously sent. We thought we'd start by comparing the numbers to what would be expected from the simplest possible model: one where we simply consider the amount of ER membrane area and luminal volume in the peripheral versus perinuclear regions and calculate how we would expect membrane versus luminal proteins to be distributed if the whole system is equilibrated. Essentially, this is assuming that a given membrane protein is equally likely to be anywhere on the ER membrane, so the only difference between a peripheral vs perinuclear region is how much membrane is in that region. Obviously, this is a gross over-simplification but it serves as a useful base case to compare to.
+
+In terms of the ER morphology, we assume the peripheral region is made up of tubes of radius R arranged according to the skeletonized images. In the perinuclear region, we assume it is just 2 sheets separated by distance D. We can then estimate the expected ratios:
+
+1) peripheral to perinuclear membrane area ratio ~ 0.18
+2) peripheral to perinuclear lumen volume ratio ~ 0.09
+
+These ratios are quite a bit lower than the measured values of protein concentration (~45%)
+
+
+If we then estimate the ratio of peripheral to perinuclear membrane
+
+
+This means that if we calculate the ``percent change in membrane vs luminal peripheral vs perinuclear ratio" (that is, the quantities in the bottom panel of Fig. C you sent us), we would expect a value of 1 - R/D. From measurements in the literature of tubule radius vs lumen width, this would give a value of about 50%, quite a ways off from the 20% you have measured. 
+
+
+
