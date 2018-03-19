@@ -1,0 +1,25 @@
+# file defining network structure
+
+# list of all node indices (1st column)
+#and positions (x in 2nd column, y in 3rd column)
+NODE 1 6.161000E+00 4.880000E+00 7.000000E+00
+NODE 2 5.795000E+00 4.758000E+00 6.200000E+00
+NODE 3 4.758000E+00 5.978000E+00 5.600000E+00
+NODE 4 4.928800E+00 5.477800E+00 5.160000E+00
+NODE 5 4.989800E+00 5.734000E+00 4.800000E+00
+NODE 6 5.429000E+00 5.307000E+00 4.436400E+00
+NODE 7 5.124000E+00 5.917000E+00 4.200000E+00
+NODE 8 5.429000E+00 6.039000E+00 4.000000E+00
+
+# list of all edges
+# 1st column is edge index
+# 2nd and 3rd columns and nodes that edge connects
+# must list these *after* all the nodes
+EDGE 1 8 2 3.809770E+00
+EDGE 2 6 5 1.038110E+00
+EDGE 3 7 5 6.418800E-01
+EDGE 4 6 4 9.198200E-01
+EDGE 5 4 5 4.463500E-01
+EDGE 6 5 3 8.695700E-01
+EDGE 7 4 2 2.059310E+00
+EDGE 8 2 1 8.985500E-01

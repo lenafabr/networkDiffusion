@@ -1,0 +1,17 @@
+# parameter file for calculating first passage times on a network
+ACTION GETFPT
+
+# set random number generator by system time
+RNGSEED 0
+
+# network structure stored in this file
+NETFILE 020714_2_2_101.net
+
+# number of particles to simulate
+NPART 100
+
+# starting node for all particles
+STARTNODE 1
+
+# print number of finished particles every so many steps
+PRINTEVERY 10

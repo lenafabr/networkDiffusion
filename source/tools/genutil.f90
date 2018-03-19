@@ -191,7 +191,6 @@ CONTAINS
     DOUBLE PRECISION :: DX
 
     DX = SQRT(DOT_PRODUCT(X,X))
-
     
     X(:) = X(:)/DX
     IF (PRESENT(NORMX)) NORMX = DX

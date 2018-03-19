@@ -126,11 +126,13 @@ CONTAINS
               STOP 1
            ENDIF
            CALL READF(NETP%NODEPOS(NID,1))
-           CALL READF(NETP%NODEPOS(NID,2))           
+           CALL READF(NETP%NODEPOS(NID,2))
+           CALL READF(NETP%NODEPOS(NID,3))!this line had to be added for 3d        
         ELSEIF (WORD.EQ.'EDGE') THEN                              
            CALL READI(EID) ! edge id
            CALL READI(NODE1)
            CALL READI(NODE2)
+           CALL READF (NETP%EDGELEN(EID))
 
            IF (NODE1.LT.1.OR.NODE2.LT.1.OR.EID.LT.1&
                 & .OR.NODE1.GT.NNODE.OR.NODE2.GT.NNODE.OR.EID.GT.NEDGE) THEN
@@ -146,7 +148,7 @@ CONTAINS
         ENDIF        
      END DO
 
-     PRINT*, 'Setting up connectivity and edge lengths ...'
+     PRINT*, 'Setting up connectivity and edge lengths...'
 
      DO EID = 1,NEDGE
         NODE1 = NETP%EDGENODE(EID,1)
@@ -155,8 +157,9 @@ CONTAINS
         ! edge start, length, and (normalized) direction
         NETP%EDGESTART(EID,:) = NETP%NODEPOS(NODE1,:)
         NETP%EDGEDIR(EID,:) = NETP%NODEPOS(NODE2,:)-NETP%NODEPOS(NODE1,:)   
-        CALL NORMALIZE(NETP%EDGEDIR(EID,:), LEN)          
-        NETP%EDGELEN(EID) = LEN       
+        CALL NORMALIZE(NETP%EDGEDIR(EID,:), LEN)      
+        !NETP%EDGELEN(EID) = LEN
+        ! EDGE LENGTHS NOW JUST SET FROM NETWORK FILE
 
         ! increment degrees of the nodes
         NETP%NODEDEG(NODE1) = NETP%NODEDEG(NODE1)+1
@@ -167,6 +170,8 @@ CONTAINS
                 & NODE1, NODE2, MAXBRANCH, NETP%NODEDEG(NODE1), NETP%NODEDEG(NODE2)
            STOP 1
         ENDIF
+
+
 
         ! edges connected to each node
         NETP%NODEEDGE(NODE1,NETP%NODEDEG(NODE1)) = EID

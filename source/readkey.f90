@@ -47,13 +47,14 @@ SUBROUTINE READKEY
   NETFILE = '*.net' ! File containing network structure
 
   ! network parameters
-  MAXBRANCH = 5 ! max number of branches per node
+  MAXBRANCH = 10 ! max number of branches per node
 
   ! solving diffusion equations and propagating particles
   SOLVETOLF = 1D-4 ! solution tolerance (for function)
   SOLVETOLX = 1D-4 ! solution tolerance (for x value)
   
-  SOLVEITER = 1000 ! max iterations
+  !SOLVEITER = 1000 ! max iterations
+  SOLVEITER = 10000 ! max iterations
   NPART = 1000 ! number of particles to propagate
   NSTEP = 1E6 ! Number of steps to propagate for
   DELT = 1D-4 ! time step for BD propagation
