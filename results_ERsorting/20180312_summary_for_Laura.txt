@@ -1,19 +1,19 @@
 Hi Laura,
 
-We've had a chance to dig into the cell images and data you previously sent. We thought we'd start by comparing the numbers to what would be expected from the simplest possible model: one where we simply consider the amount of ER membrane area and luminal volume in the peripheral versus perinuclear regions and calculate how we would expect membrane versus luminal proteins to be distributed if the whole system is equilibrated. Essentially, this is assuming that a given membrane protein is equally likely to be anywhere on the ER membrane, so the only difference between a peripheral vs perinuclear region is how much membrane is in that region. Obviously, this is a gross over-simplification but it serves as a useful base case to compare to.
+We've had a chance to dig into the cell images and data you previously sent.
+Do you have a chance to chat over skype sometime this week or the next so we can go over what we've been thinking about and discuss what assumptions seem reasonable and where we might be way off? Below is a description of some basic calculations we've tried to get a handle on how we would expect proteins to be distributed in the ER. Please let us know if/when you're available to chat.
+
+Aidan and Lena
+
+----------------
+We thought we'd start by comparing the numbers to what would be expected from the simplest possible model: one where we just consider the amount of ER membrane area and luminal volume in the peripheral versus perinuclear regions and calculate how we would expect membrane or luminal proteins to be distributed if the whole system is equilibrated. Essentially, this is assuming that a given membrane protein is equally likely to be anywhere on the ER membrane, so the only difference between a peripheral vs perinuclear region is how much membrane is in that region. Obviously, this is a gross over-simplification but it serves as a useful base case to compare to.
 
 In terms of the ER morphology, we assume the peripheral region is made up of tubes of radius R arranged according to the skeletonized images. In the perinuclear region, we assume it is just 2 sheets separated by distance D. We can then estimate the expected ratios:
 
 1) peripheral to perinuclear membrane area ratio ~ 0.18
 2) peripheral to perinuclear lumen volume ratio ~ 0.09
 
-These ratios are quite a bit lower than the measured values of protein concentration (~45%)
+These are based on your imaging data for the 4 cells with Calnexin and KDEL imaged together. These ratios are substantially lower than the measured values of protein peripheral vs perinuclear ratios (From top panel in Fig. C that you sent us: ~0.45 for calnexin and ~0.35 for KDEL). Incidentally, when we try to replicate the measurement of fluorescent signal intensity we do get lower values  of peripheral vs perinuclear ratio (0.28 for membrane 0.2(???) for luminal) but they are still not as low as one would expect if the proteins were just scattered uniformly over the ER in equilibrium. Also, if the perinuclear ER has more than just 2 sheets, that would make the discrepancy even bigger.
 
-
-If we then estimate the ratio of peripheral to perinuclear membrane
-
-
-This means that if we calculate the ``percent change in membrane vs luminal peripheral vs perinuclear ratio" (that is, the quantities in the bottom panel of Fig. C you sent us), we would expect a value of 1 - R/D. From measurements in the literature of tubule radius vs lumen width, this would give a value of about 50%, quite a ways off from the 20% you have measured. 
-
-
+Given this discrepancy, it seems *both* membrane and luminal proteins are more preferentially localized in the peripheral tubes than we would expect from equilibrium alone. Also, at equilibrium, the peripheral vs perinuclear ratio for a membrane protein would scale linearly with tubule radius R. From what we can find in the literature RTN4a is supposed to decrease tubule radius by 60%, so we would expect the membrane peripheral-to-perinuclear ratio to increase by 60% as well. It increases by only 25% in your data, so the effect of RTN4a is more than large enough to account for the change if all the tubules were to shrink by the expected amount.
 
